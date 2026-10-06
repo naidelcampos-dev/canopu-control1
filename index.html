@@ -38,7 +38,7 @@ h2{margin-top:5px}.topline{display:flex;justify-content:space-between;gap:10px;a
     <p class="muted">Control y prevención de equipos</p>
     <label>Usuario</label><input id="loginUser" placeholder="admin">
     <label>Contraseña</label><input id="loginPass" type="password" placeholder="1234">
-    <button onclick="login()">Ingresar</button>
+    <button onclick="dologin()">Ingresar</button>
     <p class="muted">Demo inicial: admin / 1234</p>
   </div>
 </div>
@@ -117,7 +117,17 @@ h2{margin-top:5px}.topline{display:flex;justify-content:space-between;gap:10px;a
 </div>
 </div>
 
-<script>
+<script>function dologin(){
+    const usuario = document.getElementById("loginUser").value.trim();
+    const contraseña = document.getElementById("loginPass").value;
+
+    if(usuario === "admin" && contraseña === "1234"){
+        document.getElementById("login").classList.add("hidden");
+        document.getElementById("app").classList.remove("hidden");
+    } else {
+        alert("Usuario o contraseña incorrectos");
+    }
+}
 const KEY='canopyControl_v1';
 let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
  users:[{id:1,name:'Administrador',user:'admin',pass:'1234',role:'Editor'}],
