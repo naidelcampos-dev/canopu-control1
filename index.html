@@ -270,13 +270,50 @@ function renderMenuOptions(){
 }
 
 function addMenuOption(){
-    const nombre = document.getElementById('newMenuName').value;
-    const icono = document.getElementById('newMenuIcon').value || '📁';
+    const nombre = document.getElementById('newMenuName').value.trim();
+    const icono = document.getElementById('newMenuIcon').value.trim() || '📁';
 
     if(!nombre){
-        alert('Escribe un nombre');
+        alert('Escribe un nombre para la opción');
         return;
     }
+
+    const id = 'custom_' + Date.now();
+
+    db.menu.push({
+        id:id,
+        nombre:nombre,
+        icono:icono
+    });
+
+    const main = document.querySelector('main');
+
+    const nuevaSeccion = document.createElement('section');
+    nuevaSeccion.id = id;
+    nuevaSeccion.className = 'view';
+
+    nuevaSeccion.innerHTML = `
+        <div class="topline">
+            <h2>${icono} ${nombre}</h2>
+        </div>
+
+        <div class="card">
+            <h3>${icono} ${nombre}</h3>
+            <p>Aquí podrás agregar la información de esta sección.</p>
+        </div>
+    `;
+
+    main.appendChild(nuevaSeccion);
+
+    persist();
+    renderMenuOptions();
+    renderDynamicMenu();
+
+    document.getElementById('newMenuName').value='';
+    document.getElementById('newMenuIcon').value='';
+
+    alert('✅ Opción agregada correctamente');
+}
 
     db.menu.push({
         id:'custom'+Date.now(),
