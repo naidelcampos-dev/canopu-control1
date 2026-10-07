@@ -51,6 +51,7 @@ h2{margin-top:5px}.topline{display:flex;justify-content:space-between;gap:10px;a
 <button data-v="review" onclick="showView('review')">Revisión</button>
 <button data-v="reports" onclick="showView('reports')">Reportes</button>
 <button data-v="users" onclick="showView('users')">Usuarios</button>
+<button data-v="settings" onclick="showView('settings')">⚙️ Ajustes</button>
 <button onclick="logout()">Salir</button>
 </nav>
 <main>
@@ -95,6 +96,23 @@ h2{margin-top:5px}.topline{display:flex;justify-content:space-between;gap:10px;a
 <button onclick="saveUser()">Guardar usuario</button>
 </div>
 <button id="addUserBtn" onclick="document.getElementById('userForm').classList.remove('hidden')" style="margin-top:12px">+ Agregar usuario</button>
+</div>
+</section>
+<section id="settings" class="view">
+<h2>⚙️ Ajustes</h2>
+<div class="card">
+<h3>Personalizar menú</h3>
+<p>Desde aquí podrás administrar las opciones de Canopy Control.</p>
+
+<label>Nombre de la opción</label>
+<input id="newMenuName" placeholder="Ej. Mantenimiento">
+
+<label>Icono</label>
+<input id="newMenuIcon" placeholder="Ej. 🔧">
+
+<button onclick="addMenuOption()">➕ Agregar opción</button>
+
+<div id="menuOptions" style="margin-top:15px"></div>
 </div>
 </section>
 </main>
@@ -225,6 +243,58 @@ function exportCSV(){
  db.reviews.forEach(r=>{let e=db.equipment.find(x=>x.id===r.equipId);lines.push([new Date(r.date).toLocaleString(),e?.num||'',r.status,r.used,r.user,r.note||''])});
  const csv=lines.map(a=>a.map(x=>`"${String(x).replaceAll('"','""')}"`).join(',')).join('\\n');
  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='reporte_canopy.csv';a.click();
+}
+// ===== MENÚ PERSONALIZABLE =====
+if(!db.menu){
+    db.menu = [
+        {id:'dashboard', nombre:'Inicio', icono:'🏠'},
+        {id:'equipment', nombre:'Equipos', icono:'🪢'},
+        {id:'review', nombre:'Revisión', icono:'📝'},
+        {id:'reports', nombre:'Reportes', icono:'📊'},
+        {id:'users', nombre:'Usuarios', icono:'👤'}
+    ];
+}
+
+function renderMenuOptions(){
+    const cont = document.getElementById('menuOptions');
+    if(!cont) return;
+
+    cont.innerHTML = db.menu.map((m,i)=>`
+        <div class="card" style="margin-bottom:10px;">
+            <b>${m.icono} ${m.nombre}</b><br><br>
+            <button onclick="deleteMenu(${i})">
+                🗑 Eliminar
+            </button>
+        </div>
+    `).join('');
+}
+
+function addMenuOption(){
+    const nombre = document.getElementById('newMenuName').value;
+    const icono = document.getElementById('newMenuIcon').value || '📁';
+
+    if(!nombre){
+        alert('Escribe un nombre');
+        return;
+    }
+
+    db.menu.push({
+        id:'custom'+Date.now(),
+        nombre:nombre,
+        icono:icono
+    });
+
+    persist();
+    renderMenuOptions();
+
+    document.getElementById('newMenuName').value='';
+    document.getElementById('newMenuIcon').value='';
+}
+
+function deleteMenu(i){
+    db.menu.splice(i,1);
+    persist();
+    renderMenuOptions();
 }
 function renderAll(){renderMonths();renderDashboard();renderEquipment();renderReview();renderReports();renderUsers()}
 </script>
