@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canopy Control</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f3f5f7;color:#17202a}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:0;border-radius:10px;padding:11px 14px;background:#1f6feb;color:#fff}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd3da;border-radius:9px;background:#fff}
+textarea{min-height:80px;resize:vertical}
+.hidden{display:none!important}.container{max-width:1100px;margin:auto;padding:16px}
+header{background:#123b2a;color:white;padding:15px 16px;position:sticky;top:0;z-index:5}
+.header-in{max-width:1100px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:20px;margin:0}.userbar{font-size:13px;text-align:right}
+nav{background:#fff;border-bottom:1px solid #ddd;position:sticky;top:57px;z-index:4;overflow:auto}
+.nav-in{max-width:1100px;margin:auto;display:flex;gap:6px;padding:8px 10px}
+.nav-in button{background:#eef2f5;color:#17202a;white-space:nowrap;padding:9px 12px}.nav-in button.active{background:#1f6feb;color:#fff}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 10px #0000000d}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+label{font-weight:bold;font-size:14px;display:block;margin-bottom:6px}
+h2,h3{margin-top:0}.muted{color:#65727e;font-size:13px}.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row>*{flex:1}
+.item-card{border:1px solid #dce1e5;border-radius:12px;padding:12px;margin:10px 0}
+.item-title{font-weight:bold;margin-bottom:8px}.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px;border-bottom:1px solid #e1e5e8;text-align:left;vertical-align:top}
+.table-wrap{overflow:auto}.danger{background:#c62828}.secondary{background:#64717d}.success{background:#198754}.warning{background:#b77900}
+.login{max-width:430px;margin:12vh auto}.login h1{text-align:center}.login button{width:100%;margin-top:8px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.kpi{background:#fff;border-radius:14px;padding:18px}.kpi b{font-size:28px;display:block;margin-top:5px}
+.small-btn{padding:7px 10px;font-size:13px}.tag{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef2f5;font-size:12px}
+@media(max-width:700px){.grid,.grid3,.status-grid,.kpis{grid-template-columns:1fr}.container{padding:10px}.header-in{align-items:flex-start}.nav-in{padding:7px}.nav-in button{font-size:13px}}
+</style>
+</head>
+<body>
+
+<div id="loginScreen" class="container login">
+  <div class="card">
+    <h1>Canopy Control</h1>
+    <p class="muted">Control de equipos, inspecciones y reportes</p>
+    <label>Usuario</label><input id="loginUser" autocomplete="username">
+    <label style="margin-top:10px">Contraseña</label><input id="loginPass" type="password" autocomplete="current-password">
+    <button onclick="login()">Entrar</button>
+    <p id="loginMsg" class="muted"></p>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+<header><div class="header-in"><h1>Canopy Control</h1><div class="userbar"><span id="who"></span><br><button class="small-btn secondary" onclick="logout()">Salir</button></div></div></header>
+<nav><div id="nav" class="nav-in"></div></nav>
+<main class="container">
+
+<section id="home" class="page">
+  <div class="card"><h2>Inicio</h2><p>Panel de control del equipo.</p></div>
+  <div class="kpis">
+    <div class="kpi">Equipos<b id="kEquipos">0</b></div>
+    <div class="kpi">Reportes<b id="kReportes">0</b></div>
+    <div class="kpi">Elementos<b id="kItems">0</b></div>
+    <div class="kpi">Usuarios<b id="kUsers">0</b></div>
+  </div>
+</section>
+
+<section id="equipos" class="page hidden">
+  <div class="card"><h2>Equipos</h2><p class="muted">Registra el número del equipo y la identificación de cada elemento.</p>
+    <form onsubmit="saveEquipment(event)">
+      <div class="grid"><div><label># de equipo</label><input id="eqNumber" required></div></div>
+      <div id="equipmentFields"></div>
+      <button type="submit">Guardar equipo</button>
+    </form>
+  </div>
+  <div class="card"><h3>Equipos registrados</h3><div id="equipmentList"></div></div>
+</section>
+
+<section id="reportar" class="page hidden">
+  <div class="card"><h2>Reportar estado</h2>
+    <label>Seleccionar equipo</label><select id="reportEquipment" onchange="renderInspection()"><option value="">Selecciona un equipo</option></select>
+    <div id="inspection"></div>
+    <button onclick="saveReport()">Guardar reporte</button>
+  </div>
+</section>
+
+<section id="reportes" class="page hidden">
+  <div class="card"><div class="row"><div><h2>Reportes</h2><p class="muted">Historial de inspecciones. Los reportes guardan el nombre del elemento en el momento en que fueron realizados.</p></div><button onclick="exportCSV()">Exportar CSV</button></div></div>
+  <div class="card"><div id="reportsList"></div></div>
+</section>
+
+<section id="usuarios" class="page hidden">
+  <div class="card"><h2>Usuarios</h2>
+    <form onsubmit="addUser(event)" class="grid">
+      <div><label>Usuario</label><input id="newUser" required></div>
+      <div><label>Contraseña</label><input id="newPass" required></div>
+      <div><label>Rol</label><select id="newRole"><option>Administrador</option><option>Editor</option><option>Supervisor</option><option>Compañero</option></select></div>
+      <div style="display:flex;align-items:end"><button type="submit">Añadir usuario</button></div>
+    </form>
+  </div>
+  <div class="card"><div id="usersList"></div></div>
+</section>
+
+<section id="config" class="page hidden">
+  <div class="card"><h2>Configuración</h2><p class="muted">Aquí puedes añadir, cambiar o eliminar elementos y estados sin tocar el código.</p></div>
+  <div class="card">
+    <h3>Elementos de los equipos</h3>
+    <div class="row"><input id="newItem" placeholder="Ej.: Casco"><button onclick="addItem()">Añadir elemento</button></div>
+    <div id="itemsConfig"></div>
+  </div>
+  <div class="card">
+    <h3>Estados disponibles</h3>
+    <div class="row"><input id="newStatus" placeholder="Ej.: En revisión"><button onclick="addStatus()">Añadir estado</button></div>
+    <div id="statusesConfig"></div>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+const KEY={items:'ccItems',states:'ccStates',users:'ccUsers',eq:'ccEq',rep:'ccRep'};
+const defaultItems=[
+ {id:'carabin',name:'Carabín'},
+ {id:'carabinC',name:'Carabín tipo C'},
+ {id:'polea',name:'# de polea'},
+ {id:'lc',name:'Linga corta'},
+ {id:'lm',name:'Linga mediana'},
+ {id:'ll',name:'Linga larga'}
+];
+const defaultStates=['Bueno','Observación','Dañado','Requiere reemplazo'];
+
+function load(key, fallback){try{return JSON.parse(localStorage.getItem(key)) ?? fallback}catch(e){return fallback}}
+let items=load(KEY.items,defaultItems), states=load(KEY.states,defaultStates);
+let users=load(KEY.users,[{u:'admin',p:'admin123',r:'Administrador'}]);
+let equipments=load(KEY.eq,[]), reports=load(KEY.rep,[]);
+let currentUser=null, currentPage='home';
+
+function persist(){localStorage.setItem(KEY.items,JSON.stringify(items));localStorage.setItem(KEY.states,JSON.stringify(states));localStorage.setItem(KEY.users,JSON.stringify(users));localStorage.setItem(KEY.eq,JSON.stringify(equipments));localStorage.setItem(KEY.rep,JSON.stringify(reports))}
+function login(){
+ const u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
+ const found=users.find(x=>x.u===u&&x.p===p);
+ if(!found){document.getElementById('loginMsg').textContent='Usuario o contraseña incorrectos.';return}
+ currentUser=found;document.getElementById('loginScreen').classList.add('hidden');document.getElementById('app').classList.remove('hidden');
+ document.getElementById('who').textContent=found.u+' · '+found.r; buildNav(); showPage('home');
+}
+function logout(){currentUser=null;document.getElementById('app').classList.add('hidden');document.getElementById('loginScreen').classList.remove('hidden');document.getElementById('loginPass').value=''}
+function buildNav(){
+ const nav=document.getElementById('nav');nav.innerHTML='';
+ [['home','Inicio'],['equipos','Equipos'],['reportar','Reportar estado'],['reportes','Reportes'],['usuarios','Usuarios'],['config','Configuración']].forEach(([id,n])=>{
+  const b=document.createElement('button');b.textContent=n;b.onclick=()=>showPage(id);b.dataset.page=id;nav.appendChild(b);
+ });
+}
+function showPage(id){
+ currentPage=id;document.querySelectorAll('.page').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');
+ document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===id));
+ renderAll();
+}
+function renderAll(){renderHome();renderEquipmentForm();renderEquipmentList();renderReportSelect();renderInspection();renderReports();renderUsers();renderConfig()}
+function renderHome(){document.getElementById('kEquipos').textContent=equipments.length;document.getElementById('kReportes').textContent=reports.length;document.getElementById('kItems').textContent=items.length;document.getElementById('kUsers').textContent=users.length}
+function renderEquipmentForm(){
+ const box=document.getElementById('equipmentFields');box.innerHTML='';
+ items.forEach(it=>{box.insertAdjacentHTML('beforeend',`<div class="item-card"><div class="item-title">${esc(it.name)}</div><label>Identificación / número</label><input class="eq-item" data-id="${esc(it.id)}" placeholder="Dato del elemento"></div>`)});
+}
+function saveEquipment(e){
+ e.preventDefault();const number=document.getElementById('eqNumber').value.trim();if(!number)return;
+ const data={};document.querySelectorAll('.eq-item').forEach(x=>data[x.dataset.id]=x.value.trim());
+ const existing=equipments.find(x=>x.number===number);
+ if(existing) existing.items=data; else equipments.push({id:Date.now().toString(),number,items:data});
+ persist();e.target.reset();alert('Equipo guardado correctamente.');renderAll();
+}
+function renderEquipmentList(){
+ const box=document.getElementById('equipmentList');
+ if(!equipments.length){box.innerHTML='<p class="muted">No hay equipos registrados.</p>';return}
+ box.innerHTML=equipments.map(e=>`<div class="item-card"><div class="row"><div><b>Equipo #${esc(e.number)}</b></div><button class="small-btn danger" onclick="deleteEquipment('${e.id}')">Eliminar</button></div><ul>${items.map(i=>`<li><b>${esc(i.name)}:</b> ${esc(e.items?.[i.id]||'Sin dato')}</li>`).join('')}</ul></div>`).join('');
+}
+function deleteEquipment(id){if(confirm('¿Eliminar este equipo?')){equipments=equipments.filter(x=>x.id!==id);persist();renderAll()}}
+function renderReportSelect(){
+ const s=document.getElementById('reportEquipment'),old=s.value;
+ s.innerHTML='<option value="">Selecciona un equipo</option>'+equipments.map(e=>`<option value="${e.id}">Equipo #${esc(e.number)}</option>`).join('');
+ if(equipments.some(e=>e.id===old))s.value=old;
+}
+function renderInspection(){
+ const id=document.getElementById('reportEquipment').value,box=document.getElementById('inspection');box.innerHTML='';
+ if(!id){box.innerHTML='<p class="muted">Selecciona un equipo para revisar cada elemento.</p>';return}
+ const eq=equipments.find(e=>e.id===id);if(!eq)return;
+ items.forEach(i=>{
+  box.insertAdjacentHTML('beforeend',`<div class="item-card"><div class="item-title">${esc(i.name)} <span class="tag">${esc(eq.items?.[i.id]||'Sin identificación')}</span></div><div class="status-grid"><div><label>Estado</label><select class="rep-state" data-item="${esc(i.id)}">${states.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div><div><label>Observación</label><input class="rep-note" data-item="${esc(i.id)}" placeholder="Observación"></div></div></div>`);
+ });
+}
+function saveReport(){
+ const id=document.getElementById('reportEquipment').value;if(!id){alert('Selecciona un equipo.');return}
+ const eq=equipments.find(e=>e.id===id),details=[];
+ items.forEach(i=>{
+  const st=document.querySelector(`.rep-state[data-item="${CSS.escape(i.id)}"]`),nt=document.querySelector(`.rep-note[data-item="${CSS.escape(i.id)}"]`);
+  details.push({i:i.id,name:i.name,state:st?.value||'',note:nt?.value||'',identification:eq.items?.[i.id]||''});
+ });
+ reports.unshift({id:Date.now().toString(),date:new Date().toLocaleString('es-ES'),equipment:eq.number,user:currentUser.u,details});
+ persist();alert('Reporte guardado.');document.getElementById('reportEquipment').value='';renderAll();
+}
+function renderReports(){
+ const box=document.getElementById('reportsList');if(!reports.length){box.innerHTML='<p class="muted">No hay reportes.</p>';return}
+ box.innerHTML=reports.map(r=>`<div class="item-card"><div class="row"><div><b>Equipo #${esc(r.equipment)}</b><br><span class="muted">${esc(r.date)} · ${esc(r.user)}</span></div><button class="small-btn danger" onclick="deleteReport('${r.id}')">Eliminar</button></div><div class="table-wrap"><table><thead><tr><th>Elemento</th><th>Identificación</th><th>Estado</th><th>Observación</th></tr></thead><tbody>${r.details.map(d=>`<tr><td>${esc(d.name)}</td><td>${esc(d.identification)}</td><td>${esc(d.state)}</td><td>${esc(d.note)}</td></tr>`).join('')}</tbody></table></div></div>`).join('');
+}
+function deleteReport(id){if(confirm('¿Eliminar este reporte?')){reports=reports.filter(x=>x.id!==id);persist();renderAll()}}
+function exportCSV(){
+ if(!reports.length){alert('No hay reportes para exportar.');return}
+ let csv='Fecha,Equipo,Usuario,Elemento,Identificacion,Estado,Observacion\\n';
+ reports.forEach(r=>r.details.forEach(d=>csv+=`"${csvEsc(r.date)}","${csvEsc(r.equipment)}","${csvEsc(r.user)}","${csvEsc(d.name)}","${csvEsc(d.identification)}","${csvEsc(d.state)}","${csvEsc(d.note)}"\\n`));
+ const blob=new Blob(['\\ufeff'+csv],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='canopy_reportes.csv';a.click();URL.revokeObjectURL(a.href);
+}
+function csvEsc(x){return String(x??'').replaceAll('"','""')}
+function addUser(e){e.preventDefault();const u=document.getElementById('newUser').value.trim(),p=document.getElementById('newPass').value,r=document.getElementById('newRole').value;if(users.some(x=>x.u===u)){alert('Ese usuario ya existe.');return}users.push({u,p,r});persist();e.target.reset();renderAll()}
+function renderUsers(){
+ const box=document.getElementById('usersList');box.innerHTML='<div class="table-wrap"><table><thead><tr><th>Usuario</th><th>Contraseña</th><th>Rol</th><th></th></tr></thead><tbody>'+users.map((u,i)=>`<tr><td>${esc(u.u)}</td><td>${esc(u.p)}</td><td>${esc(u.r)}</td><td>${u.u!=='admin'?`<button class="small-btn danger" onclick="deleteUser(${i})">Eliminar</button>`:''}</td></tr>`).join('')+'</tbody></table></div>';
+}
+function deleteUser(i){if(confirm('¿Eliminar este usuario?')){users.splice(i,1);persist();renderAll()}}
+function addItem(){const n=document.getElementById('newItem').value.trim();if(!n)return;if(items.some(x=>x.name.toLowerCase()===n.toLowerCase())){alert('Ese elemento ya existe.');return}items.push({id:'i'+Date.now(),name:n});persist();document.getElementById('newItem').value='';renderAll()}
+function renameItem(id){const it=items.find(x=>x.id===id),n=prompt('Nuevo nombre del elemento:',it?.name||'');if(!it||!n?.trim())return;it.name=n.trim();persist();renderAll()}
+function deleteItem(id){if(items.length<=1){alert('Debe quedar al menos un elemento.');return}if(confirm('¿Eliminar este elemento de los formularios futuros? Los reportes antiguos conservarán su nombre.')){items=items.filter(x=>x.id!==id);persist();renderAll()}}
+function renderConfig(){
+ document.getElementById('itemsConfig').innerHTML=items.map(i=>`<div class="item-card"><div class="row"><div><b>${esc(i.name)}</b></div><button class="small-btn" onclick="renameItem('${esc(i.id)}')">Cambiar nombre</button><button class="small-btn danger" onclick="deleteItem('${esc(i.id)}')">Eliminar</button></div></div>`).join('');
+ document.getElementById('statusesConfig').innerHTML=states.map((s,i)=>`<div class="item-card"><div class="row"><div><b>${esc(s)}</b></div><button class="small-btn danger" onclick="deleteStatus(${i})">Eliminar</button></div></div>`).join('');
+}
+function addStatus(){const n=document.getElementById('newStatus').value.trim();if(!n)return;if(states.some(s=>s.toLowerCase()===n.toLowerCase())){alert('Ese estado ya existe.');return}states.push(n);persist();document.getElementById('newStatus').value='';renderAll()}
+function deleteStatus(i){if(states.length<=1){alert('Debe quedar al menos un estado.');return}if(confirm('¿Eliminar este estado?')){states.splice(i,1);persist();renderAll()}}
+function esc(x){return String(x??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#39;")}
+persist(); // inicializa almacenamiento si aún no existe
+</script>
+</body>
+</html>
