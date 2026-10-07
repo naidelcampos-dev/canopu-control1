@@ -1,0 +1,2801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<meta name="theme-color" content="#14532d">
+
+<title>Canopy Control</title>
+
+<style>
+:root{
+  --green:#14532d;
+  --green2:#166534;
+  --green3:#15803d;
+  --bg:#f3f7f5;
+  --card:#ffffff;
+  --text:#17251d;
+  --muted:#64746a;
+  --border:#dbe5df;
+  --danger:#b91c1c;
+  --danger-bg:#fee2e2;
+  --warning:#92400e;
+  --warning-bg:#fef3c7;
+  --good:#166534;
+  --good-bg:#dcfce7;
+  --blue:#1d4ed8;
+  --blue-bg:#dbeafe;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+html,body{
+  margin:0;
+  padding:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+body{
+  min-height:100vh;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+.hidden{
+  display:none !important;
+}
+
+/* LOGIN */
+
+#login{
+  min-height:100vh;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:
+    linear-gradient(135deg,#14532d,#166534 50%,#0f3d23);
+}
+
+.login-box{
+  width:min(430px,100%);
+  background:white;
+  border-radius:24px;
+  padding:30px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);
+}
+
+.login-logo{
+  text-align:center;
+  font-size:48px;
+  margin-bottom:8px;
+}
+
+.login-box h1{
+  margin:0;
+  text-align:center;
+  color:var(--green);
+}
+
+.login-box p{
+  text-align:center;
+  color:var(--muted);
+}
+
+.login-box .hint{
+  margin-top:20px;
+  padding:12px;
+  border-radius:10px;
+  background:#f1f5f3;
+  font-size:13px;
+}
+
+/* APP */
+
+#app{
+  min-height:100vh;
+}
+
+header{
+  background:var(--green);
+  color:white;
+  padding:28px 20px 24px;
+}
+
+.header-inner{
+  max-width:1200px;
+  margin:auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+
+header h1{
+  margin:0;
+  font-size:30px;
+}
+
+header small{
+  opacity:.85;
+}
+
+.user-info{
+  text-align:right;
+  font-size:13px;
+}
+
+/* NAV */
+
+nav{
+  background:white;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  gap:8px;
+  padding:10px 16px;
+  overflow-x:auto;
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+
+nav button{
+  border:0;
+  background:#edf3ef;
+  color:var(--text);
+  padding:12px 18px;
+  border-radius:14px;
+  white-space:nowrap;
+  font-weight:600;
+}
+
+nav button.active{
+  background:var(--green);
+  color:white;
+}
+
+nav button.logout{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+/* MAIN */
+
+main{
+  width:min(1200px,100%);
+  margin:auto;
+  padding:24px 16px 60px;
+}
+
+.view{
+  display:none;
+}
+
+.view.active{
+  display:block;
+}
+
+.topline{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:18px;
+}
+
+h2{
+  margin:5px 0 20px;
+  font-size:30px;
+}
+
+h3{
+  margin-top:0;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:20px;
+  margin-bottom:16px;
+  box-shadow:0 5px 18px rgba(20,83,45,.05);
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:14px;
+}
+
+.row{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.row > div{
+  flex:1;
+  min-width:180px;
+}
+
+.stat{
+  font-size:32px;
+  font-weight:800;
+  display:block;
+  margin-top:5px;
+}
+
+.muted{
+  color:var(--muted);
+}
+
+.status{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.status.good{
+  background:var(--good-bg);
+  color:var(--good);
+}
+
+.status.warning{
+  background:var(--warning-bg);
+  color:var(--warning);
+}
+
+.status.bad{
+  background:var(--danger-bg);
+  color:var(--danger);
+}
+
+.status.info{
+  background:var(--blue-bg);
+  color:var(--blue);
+}
+
+/* FORMS */
+
+label{
+  display:block;
+  font-size:14px;
+  font-weight:700;
+  margin:12px 0 7px;
+}
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:12px 13px;
+  border:1px solid #ccd8d1;
+  border-radius:11px;
+  background:white;
+  color:var(--text);
+  outline:none;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:var(--green3);
+  box-shadow:0 0 0 3px rgba(21,128,61,.12);
+}
+
+textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+input[type="checkbox"]{
+  width:auto;
+}
+
+/* BUTTONS */
+
+.btn{
+  border:0;
+  border-radius:11px;
+  padding:11px 15px;
+  font-weight:700;
+  background:var(--green);
+  color:white;
+}
+
+.btn:hover{
+  filter:brightness(.96);
+}
+
+.btn.secondary{
+  background:#e8efeb;
+  color:var(--text);
+}
+
+.btn.blue{
+  background:#1d4ed8;
+}
+
+.btn.danger{
+  background:#b91c1c;
+}
+
+.btn.warning{
+  background:#d97706;
+}
+
+.btn.small{
+  padding:8px 10px;
+  font-size:13px;
+}
+
+.actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:14px;
+}
+
+/* TABLE */
+
+.table-wrap{
+  width:100%;
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:650px;
+}
+
+th,
+td{
+  text-align:left;
+  padding:12px 10px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+
+th{
+  background:#f5f8f6;
+  font-size:13px;
+}
+
+.password-cell{
+  font-family:monospace;
+  white-space:nowrap;
+}
+
+.password-hidden{
+  letter-spacing:2px;
+}
+
+/* ALERTS */
+
+.notice{
+  padding:14px;
+  border-radius:12px;
+  background:#eff6ff;
+  color:#1e40af;
+  margin-bottom:15px;
+}
+
+.notice.warning{
+  background:#fffbeb;
+  color:#92400e;
+}
+
+.notice.danger{
+  background:#fef2f2;
+  color:#991b1b;
+}
+
+.notice.good{
+  background:#f0fdf4;
+  color:#166534;
+}
+
+/* MENU SETTINGS */
+
+.menu-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:16px;
+  border:1px solid var(--border);
+  border-radius:14px;
+  margin-top:10px;
+  background:#fff;
+}
+
+.menu-title{
+  font-size:19px;
+  font-weight:700;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:800px){
+  .grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+
+  header{
+    padding-top:26px;
+  }
+
+  .header-inner{
+    align-items:flex-start;
+  }
+
+  .user-info{
+    display:none;
+  }
+}
+
+@media(max-width:600px){
+  main{
+    padding:18px 10px 50px;
+  }
+
+  header h1{
+    font-size:26px;
+  }
+
+  h2{
+    font-size:27px;
+  }
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    padding:16px;
+    border-radius:15px;
+  }
+
+  nav{
+    padding:9px;
+  }
+
+  nav button{
+    padding:11px 15px;
+  }
+
+  .row > div{
+    min-width:100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+
+<div id="login">
+  <div class="login-box">
+
+    <div class="login-logo">🌿</div>
+
+    <h1>Canopy Control</h1>
+
+    <p>Control y prevención de equipos</p>
+
+    <label for="loginUser">Usuario</label>
+    <input id="loginUser"
+           type="text"
+           autocomplete="username"
+           placeholder="Usuario">
+
+    <label for="loginPass">Contraseña</label>
+
+    <div style="display:flex;gap:8px">
+      <input id="loginPass"
+             type="password"
+             autocomplete="current-password"
+             placeholder="Contraseña">
+      <button class="btn secondary"
+              type="button"
+              onclick="toggleLoginPassword()">
+        👁️
+      </button>
+    </div>
+
+    <button class="btn"
+            style="width:100%;margin-top:18px"
+            onclick="login()">
+      Entrar
+    </button>
+
+    <div class="hint">
+      <b>Acceso inicial</b><br>
+      Usuario: <b>admin</b><br>
+      Contraseña: <b>admin123</b>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- APP -->
+
+<div id="app" class="hidden">
+
+<header>
+  <div class="header-inner">
+
+    <div>
+      <h1>🌿 Canopy Control</h1>
+      <small>Control y prevención de equipos</small>
+    </div>
+
+    <div class="user-info">
+      <div id="userInfo"></div>
+    </div>
+
+  </div>
+</header>
+
+
+<nav id="mainNav">
+
+  <button data-v="dashboard"
+          onclick="showView('dashboard')">
+    🏠 Inicio
+  </button>
+
+  <button data-v="equipment"
+          onclick="showView('equipment')">
+    🧰 Equipos
+  </button>
+
+  <button data-v="review"
+          onclick="showView('review')">
+    📝 Revisión
+  </button>
+
+  <button data-v="reports"
+          onclick="showView('reports')">
+    📊 Reportes
+  </button>
+
+  <button data-v="users"
+          onclick="showView('users')">
+    👥 Usuarios
+  </button>
+
+  <button data-v="settings"
+          onclick="showView('settings')">
+    ⚙️ Ajustes
+  </button>
+
+  <button class="logout"
+          onclick="logout()">
+    Salir
+  </button>
+
+</nav>
+
+
+<main>
+
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="view active">
+
+  <div class="topline">
+    <h2>Dashboard</h2>
+
+    <button class="btn secondary"
+            onclick="renderAll()">
+      🔄 Actualizar
+    </button>
+  </div>
+
+  <div id="stats" class="grid"></div>
+
+  <div class="row" style="margin-top:15px">
+
+    <div class="card">
+      <h3>⚠️ Atención</h3>
+      <div id="attention"></div>
+    </div>
+
+    <div class="card">
+      <h3>📈 Más utilizados</h3>
+      <div id="mostUsed"></div>
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- EQUIPMENT -->
+
+<section id="equipment" class="view">
+
+  <div class="topline">
+
+    <h2>🧰 Equipos</h2>
+
+    <button class="btn"
+            onclick="openEquipmentForm()">
+      + Agregar equipo
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <label>Buscar equipo</label>
+
+    <input id="search"
+           type="search"
+           placeholder="Buscar por número, tipo, marca..."
+           oninput="renderEquipment()">
+
+  </div>
+
+  <div id="equipmentTable"></div>
+
+  <div id="equipmentForm"
+       class="card hidden">
+
+    <h3 id="equipmentFormTitle">
+      Agregar equipo
+    </h3>
+
+    <input id="equipmentId"
+           type="hidden">
+
+    <div class="row">
+
+      <div>
+        <label>Número / Código</label>
+        <input id="equipmentNum"
+               placeholder="Ej. EQ-003">
+      </div>
+
+      <div>
+        <label>Tipo</label>
+        <input id="equipmentType"
+               placeholder="Ej. Arnés">
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div>
+        <label>Marca</label>
+        <input id="equipmentBrand"
+               placeholder="Ej. 3M">
+      </div>
+
+      <div>
+        <label>Estado</label>
+        <select id="equipmentStatus">
+          <option value="Bueno">Bueno</option>
+          <option value="Revisión">Revisión</option>
+          <option value="Dañado">Dañado</option>
+          <option value="Fuera de servicio">Fuera de servicio</option>
+        </select>
+      </div>
+
+    </div>
+
+    <label>Observación</label>
+
+    <textarea id="equipmentNote"
+              placeholder="Observaciones del equipo"></textarea>
+
+    <div class="actions">
+
+      <button class="btn"
+              onclick="saveEquipment()">
+        💾 Guardar
+      </button>
+
+      <button class="btn secondary"
+              onclick="closeEquipmentForm()">
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- REVIEW -->
+
+<section id="review" class="view">
+
+  <h2>📝 Revisión diaria</h2>
+
+  <div class="card">
+
+    <label>Equipo</label>
+
+    <select id="reviewEquip"></select>
+
+    <label>Estado</label>
+
+    <select id="reviewStatus">
+      <option value="Bueno">Bueno</option>
+      <option value="Revisión">Requiere revisión</option>
+      <option value="Dañado">Dañado</option>
+      <option value="Fuera de servicio">Fuera de servicio</option>
+    </select>
+
+    <label>Observación</label>
+
+    <textarea id="reviewNote"
+              placeholder="Escribe las observaciones..."></textarea>
+
+    <label>¿Se utilizó hoy?</label>
+
+    <select id="reviewUsed">
+      <option value="Sí">Sí</option>
+      <option value="No">No</option>
+    </select>
+
+    <button class="btn"
+            onclick="saveReview()"
+            style="margin-top:15px">
+      💾 Guardar revisión
+    </button>
+
+  </div>
+
+</section>
+
+
+<!-- REPORTS -->
+
+<section id="reports" class="view">
+
+  <div class="topline">
+
+    <h2>📊 Reportes e historial</h2>
+
+    <button class="btn"
+            onclick="exportCSV()">
+      📥 Exportar CSV
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <div id="reportsTable"></div>
+
+  </div>
+
+</section>
+
+
+<!-- USERS -->
+
+<section id="users" class="view">
+
+  <h2>👥 Usuarios y accesos</h2>
+
+  <div class="notice">
+    <b>Roles:</b>
+    <b>Administrador</b> tiene acceso completo.
+    <b>Editor</b> puede gestionar equipos y revisiones.
+  </div>
+
+  <div class="card">
+
+    <h3>Usuarios registrados</h3>
+
+    <div id="usersTable"></div>
+
+  </div>
+
+  <div id="userForm"
+       class="card hidden">
+
+    <h3>➕ Agregar usuario</h3>
+
+    <div class="row">
+
+      <div>
+        <label>Nombre</label>
+        <input id="newName"
+               placeholder="Nombre completo">
+      </div>
+
+      <div>
+        <label>Usuario</label>
+        <input id="newUser"
+               placeholder="usuario">
+      </div>
+
+    </div>
+
+    <div class="row">
+
+      <div>
+        <label>Contraseña</label>
+
+        <div style="display:flex;gap:8px">
+
+          <input id="newPass"
+                 type="password"
+                 placeholder="Contraseña">
+
+          <button class="btn secondary"
+                  type="button"
+                  onclick="toggleNewPassword()">
+            👁️
+          </button>
+
+        </div>
+
+      </div>
+
+      <div>
+
+        <label>Rol</label>
+
+        <select id="newRole">
+          <option value="Editor">Editor</option>
+          <option value="Administrador">Administrador</option>
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="actions">
+
+      <button class="btn"
+              onclick="saveUser()">
+        💾 Guardar usuario
+      </button>
+
+      <button class="btn secondary"
+              onclick="closeUserForm()">
+        Cancelar
+      </button>
+
+    </div>
+
+  </div>
+
+  <button id="addUserBtn"
+          class="btn"
+          onclick="openUserForm()">
+    + Agregar usuario
+  </button>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section id="settings" class="view">
+
+  <h2>⚙️ Ajustes</h2>
+
+  <div class="card">
+
+    <h3>Personalizar menú</h3>
+
+    <p>
+      Desde aquí podrás administrar las opciones
+      de Canopy Control.
+    </p>
+
+    <label>Nombre de la opción</label>
+
+    <input id="newMenuName"
+           placeholder="Ej. Mantenimiento">
+
+    <label>Icono</label>
+
+    <input id="newMenuIcon"
+           placeholder="Ej. 🔧">
+
+    <button class="btn"
+            onclick="addMenuOption()"
+            style="margin-top:14px">
+      ➕ Agregar opción
+    </button>
+
+    <div id="menuOptions"
+         style="margin-top:20px">
+    </div>
+
+  </div>
+
+  <div class="card">
+
+    <h3>💾 Datos</h3>
+
+    <p class="muted">
+      Los datos se guardan en este dispositivo.
+    </p>
+
+    <button class="btn secondary"
+            onclick="backupData()">
+      📦 Ver copia de datos
+    </button>
+
+    <button class="btn danger"
+            onclick="resetData()"
+            style="margin-left:5px">
+      🗑️ Restablecer datos
+    </button>
+
+  </div>
+
+</section>
+
+
+</main>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   CONFIGURACIÓN
+========================================================= */
+
+const KEY = "canopyControl_v1";
+
+
+/* =========================================================
+   BASE DE DATOS LOCAL
+========================================================= */
+
+const defaultDB = {
+
+  users:[
+    {
+      id:1,
+      name:"Administrador",
+      user:"admin",
+      pass:"admin123",
+      role:"Administrador"
+    }
+  ],
+
+  equipment:[
+    {
+      id:1,
+      num:"EQ-001",
+      type:"Arnés",
+      brand:"Ejemplo",
+      status:"Bueno",
+      note:""
+    },
+    {
+      id:2,
+      num:"EQ-002",
+      type:"Casco",
+      brand:"Ejemplo",
+      status:"Bueno",
+      note:""
+    }
+  ],
+
+  reviews:[],
+
+  menu:[
+    {
+      id:"inicio",
+      name:"Inicio",
+      icon:"🏠",
+      system:true,
+      view:"dashboard"
+    },
+    {
+      id:"equipos",
+      name:"Equipos",
+      icon:"🧰",
+      system:true,
+      view:"equipment"
+    },
+    {
+      id:"revision",
+      name:"Revisión",
+      icon:"📝",
+      system:true,
+      view:"review"
+    },
+    {
+      id:"reportes",
+      name:"Reportes",
+      icon:"📊",
+      system:true,
+      view:"reports"
+    },
+    {
+      id:"usuarios",
+      name:"Usuarios",
+      icon:"👥",
+      system:true,
+      view:"users"
+    },
+    {
+      id:"ajustes",
+      name:"Ajustes",
+      icon:"⚙️",
+      system:true,
+      view:"settings"
+    }
+  ]
+
+};
+
+
+let db;
+let current = null;
+
+
+/* =========================================================
+   CARGAR DATOS
+========================================================= */
+
+function loadDB(){
+
+  try{
+
+    const saved = localStorage.getItem(KEY);
+
+    if(saved){
+
+      const parsed = JSON.parse(saved);
+
+      db = {
+        users:Array.isArray(parsed.users)
+          ? parsed.users
+          : defaultDB.users,
+
+        equipment:Array.isArray(parsed.equipment)
+          ? parsed.equipment
+          : defaultDB.equipment,
+
+        reviews:Array.isArray(parsed.reviews)
+          ? parsed.reviews
+          : [],
+
+        menu:Array.isArray(parsed.menu)
+          ? parsed.menu
+          : defaultDB.menu
+      };
+
+      /* Si por alguna modificación anterior no existe admin,
+         lo volvemos a asegurar. */
+
+      if(!db.users.some(u => u.user === "admin")){
+
+        db.users.unshift({
+          id:1,
+          name:"Administrador",
+          user:"admin",
+          pass:"admin123",
+          role:"Administrador"
+        });
+
+      }
+
+    }else{
+
+      db = JSON.parse(JSON.stringify(defaultDB));
+
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    db = JSON.parse(JSON.stringify(defaultDB));
+
+  }
+
+}
+
+
+/* =========================================================
+   GUARDAR
+========================================================= */
+
+function persist(){
+
+  localStorage.setItem(KEY,JSON.stringify(db));
+
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+function login(){
+
+  const u =
+    document.getElementById("loginUser").value.trim();
+
+  const p =
+    document.getElementById("loginPass").value;
+
+  const found =
+    db.users.find(x =>
+      x.user === u &&
+      x.pass === p
+    );
+
+  if(!found){
+
+    alert("Usuario o contraseña incorrectos.");
+
+    return;
+  }
+
+  current = found;
+
+  document
+    .getElementById("login")
+    .classList.add("hidden");
+
+  document
+    .getElementById("app")
+    .classList.remove("hidden");
+
+  document.getElementById("userInfo").textContent =
+    `${found.name} · ${found.role}`;
+
+  applyPermissions();
+
+  renderAll();
+
+  showView("dashboard");
+
+}
+
+
+function logout(){
+
+  current = null;
+
+  document
+    .getElementById("app")
+    .classList.add("hidden");
+
+  document
+    .getElementById("login")
+    .classList.remove("hidden");
+
+  document.getElementById("loginUser").value = "";
+  document.getElementById("loginPass").value = "";
+
+}
+
+
+function toggleLoginPassword(){
+
+  const input =
+    document.getElementById("loginPass");
+
+  input.type =
+    input.type === "password"
+      ? "text"
+      : "password";
+
+}
+
+
+/* =========================================================
+   PERMISOS
+========================================================= */
+
+function applyPermissions(){
+
+  const isAdmin =
+    current &&
+    current.role === "Administrador";
+
+  const usersButton =
+    document.querySelector('nav button[data-v="users"]');
+
+  const settingsButton =
+    document.querySelector('nav button[data-v="settings"]');
+
+  if(usersButton){
+
+    usersButton.classList.toggle(
+      "hidden",
+      !isAdmin
+    );
+
+  }
+
+  if(settingsButton){
+
+    settingsButton.classList.toggle(
+      "hidden",
+      !isAdmin
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   NAVEGACIÓN
+========================================================= */
+
+function showView(view){
+
+  const section =
+    document.getElementById(view);
+
+  if(!section){
+    return;
+  }
+
+  if(
+    (view === "users" || view === "settings") &&
+    (!current || current.role !== "Administrador")
+  ){
+
+    alert("No tienes permisos para entrar aquí.");
+
+    return;
+  }
+
+  document
+    .querySelectorAll(".view")
+    .forEach(v =>
+      v.classList.remove("active")
+    );
+
+  section.classList.add("active");
+
+  document
+    .querySelectorAll("nav button[data-v]")
+    .forEach(btn =>
+      btn.classList.toggle(
+        "active",
+        btn.dataset.v === view
+      )
+    );
+
+  if(view === "dashboard"){
+    renderDashboard();
+  }
+
+  if(view === "equipment"){
+    renderEquipment();
+  }
+
+  if(view === "review"){
+    renderReview();
+  }
+
+  if(view === "reports"){
+    renderReports();
+  }
+
+  if(view === "users"){
+    renderUsers();
+  }
+
+  if(view === "settings"){
+    renderMenuOptions();
+  }
+
+}
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+function renderDashboard(){
+
+  const total =
+    db.equipment.length;
+
+  const good =
+    db.equipment.filter(e =>
+      e.status === "Bueno"
+    ).length;
+
+  const warning =
+    db.equipment.filter(e =>
+      e.status === "Revisión"
+    ).length;
+
+  const bad =
+    db.equipment.filter(e =>
+      e.status === "Dañado" ||
+      e.status === "Fuera de servicio"
+    ).length;
+
+  document.getElementById("stats").innerHTML = `
+
+    <div class="card">
+      <span class="muted">Total equipos</span>
+      <span class="stat">${total}</span>
+    </div>
+
+    <div class="card">
+      <span class="muted">En buen estado</span>
+      <span class="stat">${good}</span>
+    </div>
+
+    <div class="card">
+      <span class="muted">Requieren revisión</span>
+      <span class="stat">${warning}</span>
+    </div>
+
+    <div class="card">
+      <span class="muted">Con problemas</span>
+      <span class="stat">${bad}</span>
+    </div>
+
+  `;
+
+
+  const attention =
+    db.equipment.filter(e =>
+      e.status !== "Bueno"
+    );
+
+  if(!attention.length){
+
+    document.getElementById("attention").innerHTML =
+      `<div class="notice good">
+        ✅ No hay equipos que requieran atención.
+      </div>`;
+
+  }else{
+
+    document.getElementById("attention").innerHTML =
+      attention.map(e => `
+
+        <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+          <b>${escapeHTML(e.num)}</b>
+          · ${escapeHTML(e.type)}
+          <br>
+          <span class="status ${
+            e.status === "Revisión"
+              ? "warning"
+              : "bad"
+          }">
+            ${escapeHTML(e.status)}
+          </span>
+        </div>
+
+      `).join("");
+
+  }
+
+
+  const usage = {};
+
+  db.reviews.forEach(r => {
+
+    if(r.used === "Sí"){
+
+      usage[r.equipmentId] =
+        (usage[r.equipmentId] || 0) + 1;
+
+    }
+
+  });
+
+  const ranking =
+    Object.entries(usage)
+      .sort((a,b) => b[1]-a[1])
+      .slice(0,5);
+
+  if(!ranking.length){
+
+    document.getElementById("mostUsed").innerHTML =
+      `<span class="muted">
+        Todavía no hay datos de utilización.
+      </span>`;
+
+  }else{
+
+    document.getElementById("mostUsed").innerHTML =
+      ranking.map(([id,count]) => {
+
+        const e =
+          db.equipment.find(x =>
+            String(x.id) === String(id)
+          );
+
+        return `
+          <div style="padding:7px 0">
+            <b>${escapeHTML(e ? e.num : "Equipo")}</b>
+            · ${count} utilización(es)
+          </div>
+        `;
+
+      }).join("");
+
+  }
+
+}
+
+
+/* =========================================================
+   EQUIPOS
+========================================================= */
+
+function renderEquipment(){
+
+  const search =
+    document.getElementById("search")
+      ?.value
+      .trim()
+      .toLowerCase() || "";
+
+  const filtered =
+    db.equipment.filter(e =>
+      [
+        e.num,
+        e.type,
+        e.brand,
+        e.status
+      ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search)
+    );
+
+  if(!filtered.length){
+
+    document.getElementById("equipmentTable").innerHTML =
+      `<div class="card">
+        No se encontraron equipos.
+      </div>`;
+
+    return;
+  }
+
+
+  document.getElementById("equipmentTable").innerHTML = `
+
+    <div class="card table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Marca</th>
+            <th>Estado</th>
+            <th>Observación</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${filtered.map(e => `
+
+            <tr>
+
+              <td><b>${escapeHTML(e.num)}</b></td>
+
+              <td>${escapeHTML(e.type)}</td>
+
+              <td>${escapeHTML(e.brand)}</td>
+
+              <td>
+                <span class="status ${statusClass(e.status)}">
+                  ${escapeHTML(e.status)}
+                </span>
+              </td>
+
+              <td>
+                ${escapeHTML(e.note || "-")}
+              </td>
+
+              <td>
+
+                <div class="actions">
+
+                  <button class="btn small"
+                          onclick="editEquipment(${e.id})">
+                    ✏️
+                  </button>
+
+                  <button class="btn small danger"
+                          onclick="deleteEquipment(${e.id})">
+                    🗑️
+                  </button>
+
+                </div>
+
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+function openEquipmentForm(){
+
+  document
+    .getElementById("equipmentForm")
+    .classList.remove("hidden");
+
+  document.getElementById("equipmentFormTitle")
+    .textContent = "Agregar equipo";
+
+  document.getElementById("equipmentId").value = "";
+  document.getElementById("equipmentNum").value = "";
+  document.getElementById("equipmentType").value = "";
+  document.getElementById("equipmentBrand").value = "";
+  document.getElementById("equipmentStatus").value = "Bueno";
+  document.getElementById("equipmentNote").value = "";
+
+}
+
+
+function closeEquipmentForm(){
+
+  document
+    .getElementById("equipmentForm")
+    .classList.add("hidden");
+
+}
+
+
+function editEquipment(id){
+
+  const e =
+    db.equipment.find(x => x.id === id);
+
+  if(!e) return;
+
+  openEquipmentForm();
+
+  document.getElementById("equipmentFormTitle")
+    .textContent = "Editar equipo";
+
+  document.getElementById("equipmentId").value = e.id;
+  document.getElementById("equipmentNum").value = e.num;
+  document.getElementById("equipmentType").value = e.type;
+  document.getElementById("equipmentBrand").value = e.brand;
+  document.getElementById("equipmentStatus").value = e.status;
+  document.getElementById("equipmentNote").value = e.note || "";
+
+}
+
+
+function saveEquipment(){
+
+  const id =
+    document.getElementById("equipmentId").value;
+
+  const num =
+    document.getElementById("equipmentNum").value.trim();
+
+  const type =
+    document.getElementById("equipmentType").value.trim();
+
+  const brand =
+    document.getElementById("equipmentBrand").value.trim();
+
+  const status =
+    document.getElementById("equipmentStatus").value;
+
+  const note =
+    document.getElementById("equipmentNote").value.trim();
+
+
+  if(!num || !type){
+
+    alert("Escribe al menos el código y el tipo.");
+
+    return;
+  }
+
+
+  if(id){
+
+    const e =
+      db.equipment.find(x =>
+        String(x.id) === String(id)
+      );
+
+    if(e){
+
+      e.num = num;
+      e.type = type;
+      e.brand = brand;
+      e.status = status;
+      e.note = note;
+
+    }
+
+  }else{
+
+    db.equipment.push({
+
+      id:Date.now(),
+      num,
+      type,
+      brand,
+      status,
+      note
+
+    });
+
+  }
+
+
+  persist();
+
+  closeEquipmentForm();
+
+  renderAll();
+
+  showView("equipment");
+
+}
+
+
+function deleteEquipment(id){
+
+  const e =
+    db.equipment.find(x => x.id === id);
+
+  if(!e) return;
+
+  if(!confirm(
+    `¿Eliminar el equipo ${e.num}?`
+  )){
+    return;
+  }
+
+  db.equipment =
+    db.equipment.filter(x =>
+      x.id !== id
+    );
+
+  persist();
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   REVISIONES
+========================================================= */
+
+function renderReview(){
+
+  const select =
+    document.getElementById("reviewEquip");
+
+  const old =
+    select.value;
+
+  select.innerHTML =
+
+    `<option value="">
+      Selecciona un equipo
+    </option>` +
+
+    db.equipment.map(e => `
+      <option value="${e.id}">
+        ${escapeHTML(e.num)} · ${escapeHTML(e.type)}
+      </option>
+    `).join("");
+
+  if(
+    old &&
+    db.equipment.some(e =>
+      String(e.id) === String(old)
+    )
+  ){
+
+    select.value = old;
+
+  }
+
+}
+
+
+function saveReview(){
+
+  const equipmentId =
+    document.getElementById("reviewEquip").value;
+
+  const status =
+    document.getElementById("reviewStatus").value;
+
+  const note =
+    document.getElementById("reviewNote").value.trim();
+
+  const used =
+    document.getElementById("reviewUsed").value;
+
+
+  if(!equipmentId){
+
+    alert("Selecciona un equipo.");
+
+    return;
+  }
+
+
+  const e =
+    db.equipment.find(x =>
+      String(x.id) === String(equipmentId)
+    );
+
+  if(!e){
+
+    alert("No se encontró el equipo.");
+
+    return;
+  }
+
+
+  e.status = status;
+
+  e.note = note;
+
+
+  db.reviews.push({
+
+    id:Date.now(),
+
+    date:new Date().toISOString(),
+
+    equipmentId:e.id,
+
+    status,
+
+    used,
+
+    note,
+
+    user:current
+      ? current.user
+      : ""
+
+  });
+
+
+  persist();
+
+  document.getElementById("reviewNote").value = "";
+
+  alert("Revisión guardada correctamente.");
+
+  renderAll();
+
+}
+
+
+/* =========================================================
+   REPORTES
+========================================================= */
+
+function renderReports(){
+
+  const rows =
+    [...db.reviews].reverse();
+
+
+  if(!rows.length){
+
+    document.getElementById("reportsTable").innerHTML =
+      `<div class="notice">
+        Todavía no hay revisiones registradas.
+      </div>`;
+
+    return;
+  }
+
+
+  document.getElementById("reportsTable").innerHTML = `
+
+    <table>
+
+      <thead>
+
+        <tr>
+          <th>Fecha</th>
+          <th>Equipo</th>
+          <th>Estado</th>
+          <th>Uso</th>
+          <th>Observación</th>
+          <th>Usuario</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        ${rows.map(r => {
+
+          const e =
+            db.equipment.find(x =>
+              x.id === r.equipmentId
+            );
+
+          return `
+
+            <tr>
+
+              <td>
+                ${formatDate(r.date)}
+              </td>
+
+              <td>
+                <b>
+                  ${escapeHTML(e ? e.num : "-")}
+                </b>
+              </td>
+
+              <td>
+                <span class="status ${statusClass(r.status)}">
+                  ${escapeHTML(r.status)}
+                </span>
+              </td>
+
+              <td>
+                ${escapeHTML(r.used)}
+              </td>
+
+              <td>
+                ${escapeHTML(r.note || "-")}
+              </td>
+
+              <td>
+                ${escapeHTML(r.user || "-")}
+              </td>
+
+            </tr>
+
+          `;
+
+        }).join("")}
+
+      </tbody>
+
+    </table>
+
+  `;
+
+}
+
+
+function quickReport(id){
+
+  showView("review");
+
+  document.getElementById("reviewEquip").value =
+    String(id);
+
+}
+
+
+function exportCSV(){
+
+  const lines = [
+
+    [
+      "Fecha",
+      "Equipo",
+      "Estado",
+      "Uso",
+      "Observación",
+      "Usuario"
+    ]
+
+  ];
+
+
+  db.reviews.forEach(r => {
+
+    const e =
+      db.equipment.find(x =>
+        x.id === r.equipmentId
+      );
+
+    lines.push([
+
+      formatDate(r.date),
+
+      e ? e.num : "",
+
+      r.status,
+
+      r.used,
+
+      r.note || "",
+
+      r.user || ""
+
+    ]);
+
+  });
+
+
+  const csv =
+    lines.map(row =>
+      row.map(value =>
+        `"${String(value)
+          .replace(/"/g,'""')}"`
+      ).join(",")
+    ).join("\n");
+
+
+  const blob =
+    new Blob(
+      ["\uFEFF" + csv],
+      {
+        type:"text/csv;charset=utf-8"
+      }
+    );
+
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "canopy-control-reportes.csv";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+/* =========================================================
+   USUARIOS
+========================================================= */
+
+function renderUsers(){
+
+  const isAdmin =
+    current &&
+    current.role === "Administrador";
+
+  if(!isAdmin){
+    return;
+  }
+
+
+  document.getElementById("usersTable").innerHTML = `
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Nombre</th>
+            <th>Usuario</th>
+            <th>Contraseña</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          ${db.users.map(u => `
+
+            <tr>
+
+              <td>
+                <b>${escapeHTML(u.name)}</b>
+              </td>
+
+              <td>
+                ${escapeHTML(u.user)}
+              </td>
+
+              <td class="password-cell">
+
+                <span
+                  id="pass_${u.id}"
+                  class="password-hidden">
+                  ••••••••
+                </span>
+
+                <button
+                  class="btn small secondary"
+                  onclick="toggleUserPassword(${u.id})">
+                  👁️ Ver
+                </button>
+
+              </td>
+
+              <td>
+                <span class="status info">
+                  ${escapeHTML(u.role)}
+                </span>
+              </td>
+
+              <td>
+
+                <button
+                  class="btn small danger"
+                  onclick="deleteUser(${u.id})"
+                  ${u.user === "admin"
+                    ? "disabled"
+                    : ""}>
+                  🗑️
+                </button>
+
+              </td>
+
+            </tr>
+
+          `).join("")}
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+}
+
+
+function toggleUserPassword(id){
+
+  const u =
+    db.users.find(x => x.id === id);
+
+  const el =
+    document.getElementById("pass_" + id);
+
+  if(!u || !el) return;
+
+
+  if(el.dataset.visible === "yes"){
+
+    el.textContent = "••••••••";
+
+    el.dataset.visible = "no";
+
+  }else{
+
+    el.textContent = u.pass;
+
+    el.dataset.visible = "yes";
+
+  }
+
+}
+
+
+function openUserForm(){
+
+  document
+    .getElementById("userForm")
+    .classList.remove("hidden");
+
+  document.getElementById("newName").value = "";
+  document.getElementById("newUser").value = "";
+  document.getElementById("newPass").value = "";
+  document.getElementById("newRole").value = "Editor";
+
+}
+
+
+function closeUserForm(){
+
+  document
+    .getElementById("userForm")
+    .classList.add("hidden");
+
+}
+
+
+function toggleNewPassword(){
+
+  const input =
+    document.getElementById("newPass");
+
+  input.type =
+    input.type === "password"
+      ? "text"
+      : "password";
+
+}
+
+
+function saveUser(){
+
+  if(
+    !current ||
+    current.role !== "Administrador"
+  ){
+
+    alert("No tienes permisos.");
+
+    return;
+  }
+
+
+  const name =
+    document.getElementById("newName")
+      .value.trim();
+
+  const user =
+    document.getElementById("newUser")
+      .value.trim();
+
+  const pass =
+    document.getElementById("newPass")
+      .value;
+
+  const role =
+    document.getElementById("newRole")
+      .value;
+
+
+  if(!name || !user || !pass){
+
+    alert(
+      "Completa nombre, usuario y contraseña."
+    );
+
+    return;
+  }
+
+
+  if(
+    db.users.some(u =>
+      u.user.toLowerCase() ===
+      user.toLowerCase()
+    )
+  ){
+
+    alert("Ese usuario ya existe.");
+
+    return;
+  }
+
+
+  db.users.push({
+
+    id:Date.now(),
+
+    name,
+
+    user,
+
+    pass,
+
+    role
+
+  });
+
+
+  persist();
+
+  closeUserForm();
+
+  renderUsers();
+
+  alert("Usuario creado correctamente.");
+
+}
+
+
+function deleteUser(id){
+
+  if(
+    !current ||
+    current.role !== "Administrador"
+  ){
+
+    return;
+  }
+
+
+  const u =
+    db.users.find(x => x.id === id);
+
+  if(!u) return;
+
+
+  if(u.user === "admin"){
+
+    alert(
+      "El usuario administrador principal no se puede eliminar."
+    );
+
+    return;
+  }
+
+
+  if(!confirm(
+    `¿Eliminar al usuario ${u.name}?`
+  )){
+
+    return;
+
+  }
+
+
+  db.users =
+    db.users.filter(x =>
+      x.id !== id
+    );
+
+  persist();
+
+  renderUsers();
+
+}
+
+
+/* =========================================================
+   MENÚ PERSONALIZADO
+========================================================= */
+
+function renderMenuOptions(){
+
+  if(
+    !current ||
+    current.role !== "Administrador"
+  ){
+
+    return;
+  }
+
+
+  const container =
+    document.getElementById("menuOptions");
+
+
+  const custom =
+    db.menu.filter(m =>
+      !m.system
+    );
+
+
+  if(!custom.length){
+
+    container.innerHTML =
+      `<p class="muted">
+        No has agregado opciones personalizadas.
+      </p>`;
+
+    return;
+  }
+
+
+  container.innerHTML =
+    custom.map(m => `
+
+      <div class="menu-item">
+
+        <div class="menu-title">
+          ${escapeHTML(m.icon || "📌")}
+          ${escapeHTML(m.name)}
+        </div>
+
+        <button
+          class="btn danger small"
+          onclick="deleteMenuOption('${m.id}')">
+          🗑️ Eliminar
+        </button>
+
+      </div>
+
+    `).join("");
+
+}
+
+
+function addMenuOption(){
+
+  if(
+    !current ||
+    current.role !== "Administrador"
+  ){
+
+    alert("No tienes permisos.");
+
+    return;
+  }
+
+
+  const nombre =
+    document.getElementById("newMenuName")
+      .value.trim();
+
+  const icono =
+    document.getElementById("newMenuIcon")
+      .value.trim();
+
+
+  if(!nombre){
+
+    alert(
+      "Escribe un nombre para la opción."
+    );
+
+    return;
+  }
+
+
+  const id =
+    "custom_" + Date.now();
+
+
+  db.menu.push({
+
+    id,
+
+    nombre,
+
+    name:nombre,
+
+    icono:icono || "📌",
+
+    icon:icono || "📌",
+
+    system:false
+
+  });
+
+
+  persist();
+
+  document.getElementById("newMenuName").value = "";
+  document.getElementById("newMenuIcon").value = "";
+
+  renderMenuOptions();
+
+  addCustomMenuButton({
+    id,
+    name:nombre,
+    icon:icono || "📌"
+  });
+
+
+  alert("Opción agregada al menú.");
+
+}
+
+
+function addCustomMenuButton(item){
+
+  const nav =
+    document.getElementById("mainNav");
+
+
+  if(
+    document.querySelector(
+      `nav button[data-custom="${item.id}"]`
+    )
+  ){
+
+    return;
+
+  }
+
+
+  const button =
+    document.createElement("button");
+
+  button.dataset.custom =
+    item.id;
+
+  button.innerHTML =
+    `${escapeHTML(item.icon || "📌")}
+     ${escapeHTML(item.name)}`;
+
+  button.onclick = function(){
+
+    openCustomMenu(item);
+
+  };
+
+
+  const settings =
+    nav.querySelector(
+      'button[data-v="settings"]'
+    );
+
+
+  nav.insertBefore(
+    button,
+    settings
+  );
+
+}
+
+
+function deleteMenuOption(id){
+
+  if(
+    !confirm(
+      "¿Eliminar esta opción personalizada?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  db.menu =
+    db.menu.filter(m =>
+      m.id !== id
+    );
+
+  persist();
+
+  const btn =
+    document.querySelector(
+      `nav button[data-custom="${id}"]`
+    );
+
+  if(btn){
+    btn.remove();
+  }
+
+  renderMenuOptions();
+
+}
+
+
+function openCustomMenu(item){
+
+  document
+    .querySelectorAll(".view")
+    .forEach(v =>
+      v.classList.remove("active")
+    );
+
+  const main =
+    document.querySelector("main");
+
+  let customView =
+    document.getElementById(
+      "custom_" + item.id
+    );
+
+  if(!customView){
+
+    customView =
+      document.createElement("section");
+
+    customView.className =
+      "view active";
+
+    customView.id =
+      "custom_" + item.id;
+
+    customView.innerHTML = `
+
+      <h2>
+        ${escapeHTML(item.icon || "📌")}
+        ${escapeHTML(item.name)}
+      </h2>
+
+      <div class="card">
+
+        <h3>
+          ${escapeHTML(item.name)}
+        </h3>
+
+        <p class="muted">
+          Esta es una opción personalizada
+          del menú de Canopy Control.
+        </p>
+
+        <div class="notice">
+          Puedes utilizar esta sección para
+          organizar información adicional de
+          tu operación.
+        </div>
+
+      </div>
+
+    `;
+
+    main.appendChild(customView);
+
+  }else{
+
+    customView.classList.add("active");
+
+  }
+
+
+  document
+    .querySelectorAll("nav button")
+    .forEach(b =>
+      b.classList.remove("active")
+    );
+
+}
+
+
+/* =========================================================
+   RECONSTRUIR MENÚ PERSONALIZADO
+========================================================= */
+
+function renderCustomMenu(){
+
+  const custom =
+    db.menu.filter(m =>
+      !m.system
+    );
+
+
+  custom.forEach(m => {
+
+    addCustomMenuButton({
+
+      id:m.id,
+
+      name:m.name || m.nombre,
+
+      icon:m.icon || m.icono || "📌"
+
+    });
+
+  });
+
+}
+
+
+/* =========================================================
+   BACKUP
+========================================================= */
+
+function backupData(){
+
+  const data =
+    JSON.stringify(
+      db,
+      null,
+      2
+    );
+
+  const blob =
+    new Blob(
+      [data],
+      {
+        type:"application/json"
+      }
+    );
+
+  const url =
+    URL.createObjectURL(blob);
+
+  const a =
+    document.createElement("a");
+
+  a.href = url;
+
+  a.download =
+    "canopy-control-backup.json";
+
+  document.body.appendChild(a);
+
+  a.click();
+
+  a.remove();
+
+  URL.revokeObjectURL(url);
+
+}
+
+
+/* =========================================================
+   RESTABLECER
+========================================================= */
+
+function resetData(){
+
+  if(
+    !confirm(
+      "ATENCIÓN: esto eliminará equipos, revisiones y usuarios agregados. ¿Continuar?"
+    )
+  ){
+
+    return;
+
+  }
+
+
+  localStorage.removeItem(KEY);
+
+  db =
+    JSON.parse(
+      JSON.stringify(defaultDB)
+    );
+
+  current = null;
+
+  alert(
+    "Datos restablecidos. Inicia sesión nuevamente."
+  );
+
+  location.reload();
+
+}
+
+
+/* =========================================================
+   UTILIDADES
+========================================================= */
+
+function statusClass(status){
+
+  if(status === "Bueno"){
+    return "good";
+  }
+
+  if(status === "Revisión"){
+    return "warning";
+  }
+
+  return "bad";
+
+}
+
+
+function formatDate(date){
+
+  try{
+
+    return new Date(date)
+      .toLocaleString(
+        "es-ES",
+        {
+          dateStyle:"short",
+          timeStyle:"short"
+        }
+      );
+
+  }catch(e){
+
+    return date;
+
+  }
+
+}
+
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+
+}
+
+
+/* =========================================================
+   RENDER GENERAL
+========================================================= */
+
+function renderAll(){
+
+  renderDashboard();
+
+  renderEquipment();
+
+  renderReview();
+
+  renderReports();
+
+  if(
+    current &&
+    current.role === "Administrador"
+  ){
+
+    renderUsers();
+
+    renderMenuOptions();
+
+  }
+
+}
+
+
+/* =========================================================
+   INICIALIZACIÓN
+========================================================= */
+
+loadDB();
+
+renderCustomMenu();
+
+
+/* Enter para iniciar sesión */
+
+document
+  .getElementById("loginPass")
+  .addEventListener(
+    "keydown",
+    function(event){
+
+      if(event.key === "Enter"){
+
+        login();
+
+      }
+
+    }
+  );
+
+</script>
+
+</body>
+</html>
