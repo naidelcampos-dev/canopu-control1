@@ -153,20 +153,131 @@ function showPage(id){
 function renderAll(){renderHome();renderEquipmentForm();renderEquipmentList();renderReportSelect();renderInspection();renderReports();renderUsers();renderConfig()}
 function renderHome(){document.getElementById('kEquipos').textContent=equipments.length;document.getElementById('kReportes').textContent=reports.length;document.getElementById('kItems').textContent=items.length;document.getElementById('kUsers').textContent=users.length}
 function renderEquipmentForm(){
- const box=document.getElementById('equipmentFields');box.innerHTML='';
- items.forEach(it=>{box.insertAdjacentHTML('beforeend',`<div class="item-card"><div class="item-title">${esc(it.name)}</div><label>Identificación / número</label><input class="eq-item" data-id="${esc(it.id)}" placeholder="Dato del elemento"></div>`)});
+ const box=document.getElementById('equipmentFields');
+ box.innerHTML='';
+
+ items.forEach(it=>{
+   box.insertAdjacentHTML('beforeend',`
+     <div class="item-card">
+       <div class="item-title">${esc(it.name)}</div>
+
+       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+         <button type="button"
+           class="small-btn secondary"
+           onclick="toggleItem('${esc(it.id)}',false)">
+           ❌ No tiene
+         </button>
+
+         <button type="button"
+           class="small-btn success"
+           onclick="toggleItem('${esc(it.id)}',true)">
+           ✅ Tiene
+         </button>
+       </div>
+
+       <div id="field_${esc(it.id)}" class="hidden">
+         <label>Identificación / número</label>
+         <input
+           class="eq-item"
+           data-id="${esc(it.id)}"
+           placeholder="Escriba la identificación o número">
+       </div>
+     </div>
+   `);
+ });
+}
+
+function toggleItem(id,tiene){
+ const field=document.getElementById('field_'+id);
+ if(!field)return;
+
+ field.classList.toggle('hidden',!tiene);
+
+ const input=field.querySelector('.eq-item');
+
+ if(!tiene){
+   input.value='';
+ }
 }
 function saveEquipment(e){
- e.preventDefault();const number=document.getElementById('eqNumber').value.trim();if(!number)return;
- const data={};document.querySelectorAll('.eq-item').forEach(x=>data[x.dataset.id]=x.value.trim());
+ e.preventDefault();
+
+ const number=document.getElementById('eqNumber').value.trim();
+ if(!number)return;
+
+ const data={};
+
+ items.forEach(it=>{
+   const field=document.getElementById('field_'+it.id);
+   const input=field?.querySelector('.eq-item');
+
+   if(field && !field.classList.contains('hidden')){
+     data[it.id]={
+       tiene:true,
+       identificacion:input?.value.trim()||''
+     };
+   }else{
+     data[it.id]={
+       tiene:false,
+       identificacion:''
+     };
+   }
+ });
+
  const existing=equipments.find(x=>x.number===number);
- if(existing) existing.items=data; else equipments.push({id:Date.now().toString(),number,items:data});
- persist();e.target.reset();alert('Equipo guardado correctamente.');renderAll();
+
+ if(existing){
+   existing.items=data;
+ }else{
+   equipments.push({
+     id:Date.now().toString(),
+     number:number,
+     items:data
+   });
+ }
+
+ persist();
+ e.target.reset();
+
+ alert('Equipo guardado correctamente.');
+ renderAll();
 }
 function renderEquipmentList(){
  const box=document.getElementById('equipmentList');
- if(!equipments.length){box.innerHTML='<p class="muted">No hay equipos registrados.</p>';return}
- box.innerHTML=equipments.map(e=>`<div class="item-card"><div class="row"><div><b>Equipo #${esc(e.number)}</b></div><button class="small-btn danger" onclick="deleteEquipment('${e.id}')">Eliminar</button></div><ul>${items.map(i=>`<li><b>${esc(i.name)}:</b> ${esc(e.items?.[i.id]||'Sin dato')}</li>`).join('')}</ul></div>`).join('');
+
+ if(!equipments.length){
+   box.innerHTML='<p class="muted">No hay equipos registrados.</p>';
+   return;
+ }
+
+ box.innerHTML=equipments.map(e=>`
+   <div class="item-card">
+     <div class="row">
+       <div><b>Equipo #${esc(e.number)}</b></div>
+       <button
+         class="small-btn danger"
+         onclick="deleteEquipment('${e.id}')">
+         Eliminar
+       </button>
+     </div>
+
+     <ul>
+       ${items.map(i=>{
+         const d=e.items?.[i.id];
+
+         if(!d || d.tiene===false){
+           return `<li><b>${esc(i.name)}:</b> ❌ No tiene</li>`;
+         }
+
+         return `<li><b>${esc(i.name)}:</b> ✅ Tiene${
+           d.identificacion
+             ? ` — ${esc(d.identificacion)}`
+             : ' — Sin identificación'
+         }</li>`;
+       }).join('')}
+     </ul>
+   </div>
+ `).join('');
 }
 function deleteEquipment(id){if(confirm('¿Eliminar este equipo?')){equipments=equipments.filter(x=>x.id!==id);persist();renderAll()}}
 function renderReportSelect(){
@@ -175,22 +286,104 @@ function renderReportSelect(){
  if(equipments.some(e=>e.id===old))s.value=old;
 }
 function renderInspection(){
- const id=document.getElementById('reportEquipment').value,box=document.getElementById('inspection');box.innerHTML='';
- if(!id){box.innerHTML='<p class="muted">Selecciona un equipo para revisar cada elemento.</p>';return}
- const eq=equipments.find(e=>e.id===id);if(!eq)return;
+ const id=document.getElementById('reportEquipment').value;
+ const box=document.getElementById('inspection');
+
+ box.innerHTML='';
+
+ if(!id){
+   box.innerHTML='<p class="muted">Selecciona un equipo para revisar cada elemento.</p>';
+   return;
+ }
+
+ const eq=equipments.find(e=>e.id===id);
+ if(!eq)return;
+
  items.forEach(i=>{
-  box.insertAdjacentHTML('beforeend',`<div class="item-card"><div class="item-title">${esc(i.name)} <span class="tag">${esc(eq.items?.[i.id]||'Sin identificación')}</span></div><div class="status-grid"><div><label>Estado</label><select class="rep-state" data-item="${esc(i.id)}">${states.map(s=>`<option>${esc(s)}</option>`).join('')}</select></div><div><label>Observación</label><input class="rep-note" data-item="${esc(i.id)}" placeholder="Observación"></div></div></div>`);
+   const d=eq.items?.[i.id];
+
+   if(!d || d.tiene===false){
+     box.insertAdjacentHTML('beforeend',`
+       <div class="item-card">
+         <div class="item-title">
+           ${esc(i.name)}
+           <span class="tag">❌ No tiene</span>
+         </div>
+       </div>
+     `);
+     return;
+   }
+
+   box.insertAdjacentHTML('beforeend',`
+     <div class="item-card">
+       <div class="item-title">
+         ${esc(i.name)}
+         <span class="tag">
+           ✅ ${esc(d.identificacion || 'Sin identificación')}
+         </span>
+       </div>
+
+       <div class="status-grid">
+         <div>
+           <label>Estado</label>
+           <select class="rep-state" data-item="${esc(i.id)}">
+             ${states.map(s=>`<option>${esc(s)}</option>`).join('')}
+           </select>
+         </div>
+
+         <div>
+           <label>Observación</label>
+           <input
+             class="rep-note"
+             data-item="${esc(i.id)}"
+             placeholder="Observación">
+         </div>
+       </div>
+     </div>
+   `);
  });
 }
 function saveReport(){
- const id=document.getElementById('reportEquipment').value;if(!id){alert('Selecciona un equipo.');return}
+ const id=document.getElementById('reportEquipment').value;
+ if(!id){alert('Selecciona un equipo.');return}
+
  const eq=equipments.find(e=>e.id===id),details=[];
+
  items.forEach(i=>{
-  const st=document.querySelector(`.rep-state[data-item="${CSS.escape(i.id)}"]`),nt=document.querySelector(`.rep-note[data-item="${CSS.escape(i.id)}"]`);
-  details.push({i:i.id,name:i.name,state:st?.value||'',note:nt?.value||'',identification:eq.items?.[i.id]||''});
+  const st=document.querySelector(`.rep-state[data-item="${CSS.escape(i.id)}"]`);
+  const nt=document.querySelector(`.rep-note[data-item="${CSS.escape(i.id)}"]`);
+
+  const d=eq.items?.[i.id];
+
+  const identification =
+    typeof d === 'string'
+      ? d
+      : (d?.identificacion || '');
+
+  details.push({
+    i:i.id,
+    name:i.name,
+    state:st?.value||'',
+    note:nt?.value||'',
+    identification
+  });
  });
- reports.unshift({id:Date.now().toString(),date:new Date().toLocaleString('es-ES'),equipment:eq.number,user:currentUser.u,details});
- persist();alert('Reporte guardado.');document.getElementById('reportEquipment').value='';renderAll();
+
+ reports.unshift({
+   id:Date.now().toString(),
+   date:new Date().toLocaleString('es-ES'),
+   equipment:eq.number,
+   user:currentUser.u,
+   details
+ });
+
+ persist();
+
+ alert('Reporte guardado.');
+
+ document.getElementById('reportEquipment').value='';
+
+ renderAll();
 }
 function renderReports(){
  const box=document.getElementById('reportsList');if(!reports.length){box.innerHTML='<p class="muted">No hay reportes.</p>';return}
