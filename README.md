@@ -1,2 +1,2 @@
-# canopu-control1
+# canopy-control1
 control de equipos 
