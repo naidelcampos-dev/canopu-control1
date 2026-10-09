@@ -115,6 +115,9 @@ table{width:100%;border-collapse:collapse;font-size:14px}th,td{padding:9px;borde
 
 <script>
 const KEY={items:'ccItems',states:'ccStates',users:'ccUsers',eq:'ccEq',rep:'ccRep'};
+  const SUPABASE_URL = 'https://bxsyfraopltgxtwiychm.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_hqKXWubgLigJjF5YUQu8sg_SSJxjHg_';
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const defaultItems=[
  {id:'carabin',name:'Carabín'},
  {id:'carabinC',name:'Carabín tipo C'},
